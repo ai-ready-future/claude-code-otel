@@ -43,4 +43,8 @@ loki_data/
 
 # Temporary files
 tmp/
-temp/ 
+temp/
+
+# Relay/SDLC working artifacts (specs are committed; plans + run scratch are not)
+.acpx-prompts/
+docs/superpowers/plans/ 
