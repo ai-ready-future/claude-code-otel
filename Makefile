@@ -12,7 +12,7 @@ up: ## Start the observability stack
 	@echo "🚀 Starting Claude Code observability stack..."
 	docker compose up -d
 	@echo "✅ Stack started!"
-	@echo "📊 Grafana: http://localhost:3001"
+	@echo "📊 Grafana: http://localhost:3333"
 	@echo "🔐 Before first login: cp .env.example .env and set GRAFANA_ADMIN_PASSWORD"
 	@echo "🔍 Prometheus: http://localhost:9090"
 	@echo "📄 Loki: http://localhost:3100"
@@ -69,7 +69,7 @@ status: ## Show stack status
 	@docker compose ps
 	@echo ""
 	@echo "🌐 Service URLs:"
-	@echo "  Grafana:      http://localhost:3001"
+	@echo "  Grafana:      http://localhost:3333"
 	@echo "  Prometheus:   http://localhost:9090"
 	@echo "  Loki:         http://localhost:3100"
 

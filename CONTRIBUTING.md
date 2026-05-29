@@ -14,7 +14,7 @@ Thank you for your interest in contributing to the Claude Code Observability Sta
 2. Clone your fork: `git clone https://github.com/your-username/claude-code-otel.git`
    - Original repository: `git clone https://github.com/ColeMurray/claude-code-otel.git`
 3. Start the development stack: `make up`
-4. Access Grafana at http://localhost:3001 (set `GRAFANA_ADMIN_PASSWORD` in `.env`)
+4. Access Grafana at http://localhost:3333 (set `GRAFANA_ADMIN_PASSWORD` in `.env`)
 
 ## 📊 How to Contribute
 
@@ -85,7 +85,7 @@ make validate-config
 # Test individual components
 docker compose config  # Validate docker-compose.yml
 curl -f http://localhost:9090/-/healthy  # Test Prometheus
-curl -f http://localhost:3001/api/health  # Test Grafana
+curl -f http://localhost:3333/api/health  # Test Grafana
 ```
 
 ## 📈 Types of Contributions

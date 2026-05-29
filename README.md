@@ -59,7 +59,7 @@ Claude Code → OpenTelemetry Collector → Prometheus (metrics) + Loki (events/
 | **OpenTelemetry Collector** | Metrics/logs ingestion | 4317 (gRPC), 4318 (HTTP) | - |
 | **Prometheus** | Metrics storage & querying | 9090 | http://localhost:9090 |
 | **Loki** | Log aggregation & storage | 3100 | - |
-| **Grafana** | Dashboards & visualization | 3001 | http://localhost:3001 |
+| **Grafana** | Dashboards & visualization | 3333 | http://localhost:3333 |
 
 ## 🚀 Quick Start
 
@@ -95,7 +95,7 @@ claude
 ```
 
 ### 3. Access Dashboards
-- **Grafana**: http://localhost:3001
+- **Grafana**: http://localhost:3333
 - **Prometheus**: http://localhost:9090
 
 > 🖼️ **Visual Guide**: Check out the [Dashboard Screenshots](#-dashboard-screenshots) to see what your dashboards will look like!
@@ -124,7 +124,7 @@ Based on the [Claude Code Observability Documentation](CLAUDE_OBSERVABILITY.md),
 
 ### Real-time Dashboard Analysis
 
-Access comprehensive analytics through the Grafana dashboard at http://localhost:3001:
+Access comprehensive analytics through the Grafana dashboard at http://localhost:3333:
 
 - **Cost Analysis**: Real-time cost tracking with model breakdowns
 - **Request Monitoring**: API request counts and patterns by model
