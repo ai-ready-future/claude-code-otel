@@ -12,7 +12,8 @@ up: ## Start the observability stack
 	@echo "🚀 Starting Claude Code observability stack..."
 	docker compose up -d
 	@echo "✅ Stack started!"
-	@echo "📊 Grafana: http://localhost:3000 (admin/admin)"
+	@echo "📊 Grafana: http://localhost:3001"
+	@echo "🔐 Before first login: cp .env.example .env and set GRAFANA_ADMIN_PASSWORD"
 	@echo "🔍 Prometheus: http://localhost:9090"
 	@echo "📄 Loki: http://localhost:3100"
 
@@ -42,6 +43,7 @@ logs-grafana: ## Show Grafana logs
 clean: ## Clean up containers and volumes
 	@echo "🧹 Cleaning up..."
 	docker compose down -v
+	# WARNING: docker system prune -f is system-wide and affects all Docker resources on this host.
 	docker system prune -f
 	@echo "✅ Cleanup complete!"
 
@@ -67,7 +69,7 @@ status: ## Show stack status
 	@docker compose ps
 	@echo ""
 	@echo "🌐 Service URLs:"
-	@echo "  Grafana:      http://localhost:3000"
+	@echo "  Grafana:      http://localhost:3001"
 	@echo "  Prometheus:   http://localhost:9090"
 	@echo "  Loki:         http://localhost:3100"
 
