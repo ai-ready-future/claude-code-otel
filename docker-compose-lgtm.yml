@@ -4,8 +4,10 @@ services:
   lgtm:
     image: grafana/otel-lgtm:1.4.0
     container_name: lgtm
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
     ports:
-      - "3000:3000"   # Grafana
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-    restart: unless-stopped 
+      - "127.0.0.1:3001:3000"   # Grafana
+      - "127.0.0.1:4317:4317"   # OTLP gRPC
+      - "127.0.0.1:4318:4318"   # OTLP HTTP
+    restart: unless-stopped
