@@ -86,9 +86,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_session_count_total{job=\"otel-collector\"}[1h]))",
+          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[1h]) > 0))",
           "interval": "",
-          "legendFormat": "Sessions (1h)",
+          "legendFormat": "Active Sessions",
           "refId": "A"
         }
       ],
@@ -1087,7 +1087,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "100 * (sum by (tool_name) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.tool_result\" | json | success=\"true\" [15m]))) / (sum by (tool_name) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.tool_result\" [15m])))",
+          "expr": "100 * (sum by (tool_name) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.tool_result\" | success=\"true\" [15m]))) / (sum by (tool_name) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.tool_result\" [15m])))",
           "interval": "",
           "legendFormat": "{{tool_name}}",
           "refId": "A"
@@ -1202,7 +1202,7 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisLabel": "Errors/min",
+            "axisLabel": "Errors",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "bars",
@@ -1271,7 +1271,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (status_code) (rate({service_name=\"claude-code\"} |= \"claude_code.api_error\" | json | __error__ = \"\" [$__interval]))",
+          "expr": "sum by (status_code) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.api_error\" [$__interval]))",
           "interval": "",
           "legendFormat": "HTTP {{status_code}}",
           "refId": "A"
@@ -1549,6 +1549,259 @@
       ],
       "title": "API Error Events",
       "type": "logs"
+    },
+    {
+      "title": "📈 Efficiency, Sessions & Breakdown",
+      "type": "row",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 66},
+      "collapsed": false
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 50},
+              {"color": "green", "value": 90}
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 67},
+      "id": 18,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "100 * sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheRead\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=~\"cacheRead|input\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "Cache Hit %",
+          "refId": "A"
+        }
+      ],
+      "title": "Cache Hit Ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisLabel": "USD",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "normal"}
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 18, "x": 6, "y": 67},
+      "id": 19,
+      "options": {
+        "legend": {"calcs": ["max", "mean"], "displayMode": "table", "placement": "bottom"},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[1h]))",
+          "interval": "",
+          "legendFormat": "{{query_source}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Source (main vs subagent vs auxiliary)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisLabel": "Tokens",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"}
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 75},
+      "id": 20,
+      "options": {
+        "legend": {"calcs": ["max", "mean"], "displayMode": "table", "placement": "bottom"},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "sum by (model) (increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[1h]))",
+          "interval": "",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Token Spend by Model (Hourly)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisLabel": "Seconds",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "normal"}
+          },
+          "mappings": [],
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 75},
+      "id": 21,
+      "options": {
+        "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "sum by (type) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[1h]))",
+          "interval": "",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Time: User vs CLI (Hourly)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisLabel": "Decisions",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "normal"}
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "accept"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+          },
+          {
+            "matcher": {"id": "byName", "options": "reject"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 83},
+      "id": 22,
+      "options": {
+        "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "sum by (decision) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.tool_decision\" [$__interval]))",
+          "interval": "",
+          "legendFormat": "{{decision}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Tool Decisions: Accept vs Reject",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisLabel": "p95 latency (ms)",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"}
+          },
+          "mappings": [],
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 83},
+      "id": 23,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "quantile_over_time(0.95, {service_name=\"claude-code\"} |= \"claude_code.api_request\" | unwrap duration_ms [$__interval]) by (model)",
+          "interval": "",
+          "legendFormat": "{{model}} p95",
+          "refId": "A"
+        }
+      ],
+      "title": "API Latency P95 by Model",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
