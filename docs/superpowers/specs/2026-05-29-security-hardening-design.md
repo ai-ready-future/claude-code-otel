@@ -54,7 +54,10 @@ interface. `collector-config.yaml` is therefore **left unchanged**.
 `GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}`. The real value
 lives in a gitignored `.env`; a committed `.env.example` documents the variable.
 The `:-changeme` fallback guarantees the value is never literally `admin` even if
-the operator forgets `.env`.
+the operator forgets `.env`. `changeme` is an acceptable non-`admin` fallback for
+local use; the README/CONTRIBUTING notes instruct the operator to replace it. No
+runtime warning/health-check is added (documentation-only is the intended
+behavior — out of scope to enforce). `[inferred]`
 
 ### D3 — Grafana host port 3000 → 3001
 
@@ -73,6 +76,10 @@ container continues to listen on 3000, so no Grafana internal config changes.
 
 ### `docker-compose-lgtm.yml`
 - `"127.0.0.1:3001:3000"` (Grafana), `"127.0.0.1:4317:4317"`, `"127.0.0.1:4318:4318"`
+- The `lgtm` service currently has no `environment:` block, so its bundled Grafana
+  uses the image-default `admin/admin`. Add an `environment:` block with
+  `GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}` so the LGTM path
+  is hardened identically to the primary stack (Goal 2 applies to both compose files). `[inferred]`
 
 ### `collector-config.yaml`
 - **Unchanged** (per D1).
@@ -93,10 +100,18 @@ GRAFANA_ADMIN_PASSWORD=changeme
 - `clean`: add a comment warning that `docker system prune -f` is system-wide
   (affects all Docker resources on the host, not just this stack). Behavior unchanged.
 
-### `README.md` and `CLAUDE_OBSERVABILITY.md`
-- Replace `localhost:3000` references with `localhost:3001`.
-- Add a one-line note: copy `.env.example` to `.env` and set `GRAFANA_ADMIN_PASSWORD`
-  before first `make up`.
+### `README.md`, `CONTRIBUTING.md`
+- Replace ALL user-facing Grafana host-port `3000` references with `3001` — this
+  includes both `http://localhost:3000` URLs AND the bare `3000` value in the
+  README components table (line ~62). `[inferred]`
+- Replace `(admin/admin)` credential hints with a note to set `GRAFANA_ADMIN_PASSWORD`
+  via `.env` (README line ~95, CONTRIBUTING line ~17).
+- `CONTRIBUTING.md` also has a health-check `curl http://localhost:3000/api/health`
+  (line ~88) → `3001`.
+- Add a one-line note (README setup section): copy `.env.example` to `.env` and set
+  `GRAFANA_ADMIN_PASSWORD` before first `make up`.
+- `CLAUDE_OBSERVABILITY.md` contains NO `localhost:3000` or credential references
+  (verified by grep), so it is **out of scope** — no edits needed. `[inferred]`
 
 ## Verification
 
@@ -107,9 +122,20 @@ No automated test suite exists; validation is configuration-level.
 3. Grep confirms every `ports:` entry in both compose files is prefixed with `127.0.0.1:`.
 4. Grep confirms no `GF_SECURITY_ADMIN_PASSWORD=admin` remains.
 5. `.env.example` exists and is NOT gitignored (`git check-ignore .env.example` exits non-zero).
-6. Grep confirms no `localhost:3000` remains in `Makefile`, `README.md`, `CLAUDE_OBSERVABILITY.md`.
-7. Conceptual: collector-config.yaml still on `0.0.0.0` (unchanged), so OTLP ingestion + Prometheus scraping intact.
+6. Grep confirms no `localhost:3000` AND no bare Grafana port `3000` remains in
+   `Makefile`, `README.md`, `CONTRIBUTING.md` (e.g. `grep -rn '3000' Makefile README.md CONTRIBUTING.md`
+   returns only intended/unrelated matches, none Grafana-host-port).
+7. Grep confirms no `GF_SECURITY_ADMIN_PASSWORD=admin` and no `admin/admin` credential
+   hint remains in `docker-compose.yml`, `README.md`, `CONTRIBUTING.md`.
+8. `docker-compose-lgtm.yml` Grafana has a `GF_SECURITY_ADMIN_PASSWORD` env entry.
+9. Conceptual: collector-config.yaml still on `0.0.0.0` (unchanged), so OTLP ingestion + Prometheus scraping intact.
 
 ## Refinement Status
 
-(pending spec-refine phase)
+Round 1 (spec-simulator): 0 critical, 3 important, 1 minor. All findings resolved
+inline by spec-fixer — LGTM Grafana password hardening added, `CONTRIBUTING.md`
+brought into doc scope (and `CLAUDE_OBSERVABILITY.md` confirmed out of scope), bare
+README port-table value and verification grep widened, placeholder-password behavior
+clarified.
+
+Refinement: CONVERGED round 1
