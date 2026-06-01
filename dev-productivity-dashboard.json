@@ -1,0 +1,241 @@
+{
+  "title": "Developer Productivity",
+  "uid": "claude-code-dev-productivity",
+  "schemaVersion": 27,
+  "version": 1,
+  "tags": [
+    "claude-code",
+    "productivity",
+    "developer"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "user",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": {
+          "query": "label_values(claude_code_cost_usage_USD_total, user_email)"
+        },
+        "includeAll": true,
+        "multi": true,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Leverage ratio (continuous)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_active_time_seconds_total{type=\"user\",user_email=~\"$user\"}[$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Autonomy (%)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Accepted edits per active hour",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Tool actions per active hour",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({event=\"tool_result\"} [$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Output tokens per active hour",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval])) / (sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__interval])) / 3600)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "First-pass acceptance (%)",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval])) / sum(count_over_time({event=\"tool_decision\"} [$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Cache hit ratio",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",user_email=~\"$user\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{type=~\"input|cacheRead|cacheCreation\",user_email=~\"$user\"}[$__range]))"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Output tokens per accepted edit",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval]))"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "operator": "/",
+            "left": "A",
+            "right": "B",
+            "replaceFields": true
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Sessions started by type",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (start_type) (cc:sessions:daily{user_email=~\"$user\"})"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Retry tax (attempt > 1)",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status_code) (count_over_time({event=\"api_error\"} | attempt > 1 [$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Tool failure cost proxy",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(sum_over_time({event=\"tool_result\"} | success=\"false\" | unwrap duration_ms [$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Interruption index (rejects per active hour)",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"reject\" [$__interval]))"
+        }
+      ]
+    }
+  ]
+}
