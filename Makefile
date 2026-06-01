@@ -1,5 +1,5 @@
 # Claude Code Observability Stack
-.PHONY: help up down logs restart clean validate-config
+.PHONY: help up down logs restart clean validate-config preflight-productivity
 
 help: ## Show this help message
 	@echo "Claude Code Observability Stack"
@@ -97,3 +97,6 @@ demo-metrics: ## Generate demo metrics for testing
 	@echo "🎯 This would generate demo metrics if Claude Code was running"
 	@echo "💡 To see real metrics, ensure Claude Code is configured with telemetry enabled"
 	@echo "📖 Run 'make setup-claude' for setup instructions" 
+
+preflight-productivity: ## Run §12 pre-flight checks for productivity dashboards
+	bash scripts/productivity-preflight.sh
