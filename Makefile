@@ -1,5 +1,5 @@
 # Claude Code Observability Stack
-.PHONY: help up down logs restart clean validate-config preflight-productivity
+.PHONY: help up down logs restart clean validate-config preflight-productivity test
 
 help: ## Show this help message
 	@echo "Claude Code Observability Stack"
@@ -100,3 +100,6 @@ demo-metrics: ## Generate demo metrics for testing
 
 preflight-productivity: ## Run §12 pre-flight checks for productivity dashboards
 	bash scripts/productivity-preflight.sh
+
+test: ## Run the config validation suite (the CI merge gate)
+	bash scripts/validate.sh
