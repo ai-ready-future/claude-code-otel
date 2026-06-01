@@ -19,8 +19,8 @@ exporters:
     endpoint: "0.0.0.0:8889"
     # One-shot counters (session.count, lines_of_code, commit/PR, code_edit_decision)
     # increment once and never update; the default ~5m expiration drops them from
-    # /metrics, breaking "Active Sessions" and similar panels. Hold series for 2h.
-    metric_expiration: 2h
+    # /metrics, breaking "Active Sessions" and similar panels. Hold series for 24h.
+    metric_expiration: 24h
 
   debug:
     verbosity: normal
