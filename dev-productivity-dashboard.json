@@ -2,7 +2,7 @@
   "title": "Developer Productivity",
   "uid": "claude-code-dev-productivity",
   "schemaVersion": 27,
-  "version": 1,
+  "version": 2,
   "tags": [
     "claude-code",
     "productivity",
@@ -34,6 +34,19 @@
   },
   "panels": [
     {
+      "type": "row",
+      "title": "Leverage & Autonomy",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1001,
+      "panels": []
+    },
+    {
       "id": 1,
       "type": "timeseries",
       "title": "Leverage ratio (continuous)",
@@ -46,7 +59,13 @@
           "refId": "A",
           "expr": "sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_active_time_seconds_total{type=\"user\",user_email=~\"$user\"}[$__interval]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      }
     },
     {
       "id": 2,
@@ -61,52 +80,13 @@
           "refId": "A",
           "expr": "100 * sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__interval]))"
         }
-      ]
-    },
-    {
-      "id": 3,
-      "type": "timeseries",
-      "title": "Accepted edits per active hour",
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "type": "timeseries",
-      "title": "Tool actions per active hour",
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(count_over_time({event=\"tool_result\"} [$__interval]))"
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "type": "timeseries",
-      "title": "Output tokens per active hour",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval])) / (sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__interval])) / 3600)"
-        }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      }
     },
     {
       "id": 6,
@@ -121,7 +101,13 @@
           "refId": "A",
           "expr": "100 * sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval])) / sum(count_over_time({event=\"tool_decision\"} [$__interval]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      }
     },
     {
       "id": 7,
@@ -136,7 +122,89 @@
           "refId": "A",
           "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",user_email=~\"$user\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{type=~\"input|cacheRead|cacheCreation\",user_email=~\"$user\"}[$__range]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      }
+    },
+    {
+      "type": "row",
+      "title": "Throughput — per active hour",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 1002,
+      "panels": []
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Accepted edits per active hour",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Tool actions per active hour",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({event=\"tool_result\"} [$__interval]))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 18
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Output tokens per active hour",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval])) / (sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__interval])) / 3600)"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 18
+      }
     },
     {
       "id": 8,
@@ -175,7 +243,13 @@
             "replaceFields": true
           }
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      }
     },
     {
       "id": 9,
@@ -190,7 +264,26 @@
           "refId": "A",
           "expr": "sum by (start_type) (cc:sessions:daily{user_email=~\"$user\"})"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      }
+    },
+    {
+      "type": "row",
+      "title": "Friction & Quality Cost",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 1003,
+      "panels": []
     },
     {
       "id": 10,
@@ -205,7 +298,13 @@
           "refId": "A",
           "expr": "sum by (status_code) (count_over_time({event=\"api_error\"} | attempt > 1 [$__interval]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 35
+      }
     },
     {
       "id": 11,
@@ -220,7 +319,13 @@
           "refId": "A",
           "expr": "sum(sum_over_time({event=\"tool_result\"} | success=\"false\" | unwrap duration_ms [$__interval]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 35
+      }
     },
     {
       "id": 12,
@@ -235,7 +340,13 @@
           "refId": "A",
           "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"reject\" [$__interval]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 35
+      }
     }
   ]
 }

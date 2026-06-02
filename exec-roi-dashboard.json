@@ -2,7 +2,7 @@
   "title": "Executive / ROI",
   "uid": "claude-code-exec-roi",
   "schemaVersion": 27,
-  "version": 1,
+  "version": 2,
   "tags": [
     "claude-code",
     "productivity",
@@ -71,6 +71,19 @@
   },
   "panels": [
     {
+      "type": "row",
+      "title": "ROI Headline",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1001,
+      "panels": []
+    },
+    {
       "id": 1,
       "type": "timeseries",
       "title": "Leverage multiplier (Nx)",
@@ -83,7 +96,13 @@
           "refId": "A",
           "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_active_time_seconds_total{type=\"user\",user_email=~\"$user\"}[$__interval]))), 1)"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      }
     },
     {
       "id": 2,
@@ -122,7 +141,26 @@
             "replaceFields": true
           }
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      }
+    },
+    {
+      "type": "row",
+      "title": "Cost",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 1002,
+      "panels": []
     },
     {
       "id": 3,
@@ -137,7 +175,13 @@
           "refId": "A",
           "expr": "sum(cc:cost_usd:daily{user_email=~\"$user\"})"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      }
     },
     {
       "id": 4,
@@ -152,7 +196,13 @@
           "refId": "A",
           "expr": "sum(cc:cost_per_active_hour:daily{user_email=~\"$user\"})"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 10
+      }
     },
     {
       "id": 5,
@@ -191,7 +241,68 @@
             "replaceFields": true
           }
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Spend by model and query_source",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, query_source) (increase(claude_code_cost_usage_USD_total{user_email=~\"$user\"}[$__interval]))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Cache $ saved",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",user_email=~\"$user\"}[$__range])) / 1e6) * ($price_input_sonnet45 - $price_cacheread_sonnet45)"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      }
+    },
+    {
+      "type": "row",
+      "title": "Output & Adoption",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 1003,
+      "panels": []
     },
     {
       "id": 6,
@@ -206,7 +317,13 @@
           "refId": "A",
           "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      }
     },
     {
       "id": 7,
@@ -245,37 +362,13 @@
             "replaceFields": true
           }
         }
-      ]
-    },
-    {
-      "id": 8,
-      "type": "timeseries",
-      "title": "Spend by model and query_source",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (model, query_source) (increase(claude_code_cost_usage_USD_total{user_email=~\"$user\"}[$__interval]))"
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "type": "timeseries",
-      "title": "Cache $ saved",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",user_email=~\"$user\"}[$__range])) / 1e6) * ($price_input_sonnet45 - $price_cacheread_sonnet45)"
-        }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      }
     },
     {
       "id": 10,
@@ -294,7 +387,13 @@
           "refId": "B",
           "expr": "sum by (start_type) (cc:sessions:daily{user_email=~\"$user\"})"
         }
-      ]
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      }
     }
   ]
 }
