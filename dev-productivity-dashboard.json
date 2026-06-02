@@ -1,0 +1,359 @@
+{
+  "title": "Developer Productivity",
+  "uid": "claude-code-dev-productivity",
+  "schemaVersion": 27,
+  "version": 8,
+  "tags": [
+    "claude-code",
+    "productivity",
+    "developer"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "user",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": {
+          "query": "label_values(claude_code_cost_usage_USD_total, user_email)"
+        },
+        "includeAll": true,
+        "multi": true,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Headline — Leverage, Speed & Efficiency",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1001,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Leverage — agent time vs. your time",
+      "description": "Total agent (CLI) active-time ÷ your active-time over the visible range. >1× means the agent did more wall-clock work than you put in by hand. 1× = break-even.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__range])) / sum(increase(claude_code_active_time_seconds_total{type=\"user\",user_email=~\"$user\"}[$__range]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:×",
+          "decimals": 2,
+          "displayName": "Leverage",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Accepted edits per active hour",
+      "description": "Accepted code edits (Edit/Write, decision=accept) per hour of ACTIVE engagement, range-wide ratio-of-sums: sum(accepted edits over range) / (sum(active seconds, CLI+user)/3600). A SPEED/cadence signal, NOT quality — read alongside 'First-pass acceptance (%)' (panel 6): rising cadence WITH stable acceptance is healthy; rising cadence WITH falling acceptance is rubber-stamping. Neutral color on purpose: faster isn't automatically better. Judge the trend against your own baseline — no fixed 'good' target. Sparkline shows the trailing shape. user_email filter is cosmetic on this single-user host.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(claude_code_code_edit_tool_decision_total{decision=\"accept\",user_email=~\"$user\"}[$__range])) / (sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__range])) / 3600)",
+          "legendFormat": "Edits / active hr"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 1,
+          "displayName": "Edits / active hr",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Cache hit ratio — context served from cache",
+      "description": "Share of prompt-context tokens served from the prompt cache: cacheRead / (input + cacheRead + cacheCreation), ratio-of-sums over the visible range. Excludes output tokens. Higher is better — more reused context means lower token cost and faster turns. Healthy multi-turn sessions run ~85-95%; a sustained drop below your own baseline (under ~0.9 yellow, under ~0.7 red) signals cache-unfriendly prompting (volatile/early-changing context, churning CLAUDE.md, or reordered MCP/context load).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",user_email=~\"$user\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{type=~\"input|cacheRead|cacheCreation\",user_email=~\"$user\"}[$__range]))"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "displayName": "Cache hit",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "green",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      }
+    },
+    {
+      "type": "row",
+      "title": "Friction — where time & attention leak",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 1002,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Tool failure rate by tool (%)",
+      "description": "Share of each tool's calls that FAILED (success=false), per tool_name, as a 6h trailing ratio-of-sums (failed/total). Self-normalizing — internalizes call volume, so failing 3% of 4,000 Bash calls is distinguished from failing 50% of 4 calls. This is the dashboard's primary friction signal (Loki, all-user). Watch the RATE, not raw counts: a tool climbing above its own baseline = flaky command, wrong path pattern, or misconfig. A failed call isn't always wasted (a grep that misses still informs the next step). 6h window smooths low-volume tools; gaps are honest (no calls). Legend max = worst spike. Only tools that failed at least once appear.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "100 * (sum by (tool_name)(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | success=\"false\" [6h])) / sum by (tool_name)(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" [6h])))",
+          "legendFormat": "{{tool_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Interruptions — rejected tool calls (by tool)",
+      "description": "Tool calls you DECLINED (Loki tool_decision, decision=reject), counted in disjoint per-bucket windows and stacked by tool_name so you see WHICH tool's actions you interrupt most. Read as ATTENTION COST + a steering signal, NOT a quality grade — a reject often means the guardrail worked (you caught drift before it landed). Over 7d, Bash dominates rejects (you decline proposed commands); if that climbs, tighten what the agent may run (allowlist, narrower prompts, CLAUDE.md guidance). Loki is all-user; $user does not narrow it. Disjoint $__interval buckets (no sliding double-count); legend sum = total rejects per tool over the range. Low-frequency (~9/day) so buckets are sparse by nature — read the composition, not bar height.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (tool_name)(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | decision=\"reject\" [$__interval]))",
+          "legendFormat": "{{tool_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "sum",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      }
+    }
+  ]
+}

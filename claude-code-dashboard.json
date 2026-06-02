@@ -26,7 +26,12 @@
     {
       "title": "📊 Overview",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "collapsed": false
     },
     {
@@ -63,7 +68,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 5,
         "x": 0,
         "y": 1
       },
@@ -75,7 +80,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -86,13 +93,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[1h]) > 0))",
+          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[$__range]) > 0))",
           "interval": "",
           "legendFormat": "Active Sessions",
           "refId": "A"
         }
       ],
-      "title": "Active Sessions (1h)",
+      "title": "Active Sessions",
       "type": "stat"
     },
     {
@@ -129,8 +136,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 5,
         "y": 1
       },
       "id": 2,
@@ -141,7 +148,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -152,13 +161,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[1h]))",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]))",
           "interval": "",
           "legendFormat": "Cost (1h)",
           "refId": "A"
         }
       ],
-      "title": "Cost (Last Hour)",
+      "title": "Cost",
       "type": "stat"
     },
     {
@@ -195,8 +204,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 12,
+        "w": 5,
+        "x": 10,
         "y": 1
       },
       "id": 3,
@@ -207,7 +216,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -218,13 +229,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[1h]))",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[$__range]))",
           "interval": "",
           "legendFormat": "Tokens (1h)",
           "refId": "A"
         }
       ],
-      "title": "Token Usage (1h)",
+      "title": "Token Usage",
       "type": "stat"
     },
     {
@@ -261,8 +272,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 18,
+        "w": 4,
+        "x": 15,
         "y": 1
       },
       "id": 4,
@@ -273,7 +284,9 @@
         "orientation": "auto",
         "reduceOptions": {
           "values": false,
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": ""
         },
         "textMode": "auto"
@@ -284,19 +297,24 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_lines_of_code_count_total{job=\"otel-collector\"}[1h]))",
+          "expr": "sum(increase(claude_code_lines_of_code_count_total{job=\"otel-collector\"}[$__range]))",
           "interval": "",
           "legendFormat": "Lines Changed (1h)",
           "refId": "A"
         }
       ],
-      "title": "Lines of Code (1h)",
+      "title": "Lines of Code",
       "type": "stat"
     },
     {
       "title": "💰 Cost & Usage Analysis",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
       "collapsed": false
     },
     {
@@ -364,7 +382,10 @@
       "id": 5,
       "options": {
         "legend": {
-          "calcs": ["max", "mean"],
+          "calcs": [
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -531,7 +552,10 @@
       "id": 6,
       "options": {
         "legend": {
-          "calcs": ["max", "mean"],
+          "calcs": [
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -659,7 +683,11 @@
       "id": 15,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max", "mean"],
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -686,7 +714,12 @@
     {
       "title": "🔧 Tool Usage & Performance",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 22},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
       "collapsed": false
     },
     {
@@ -824,7 +857,10 @@
       "id": 7,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "mean"],
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -976,7 +1012,10 @@
       "id": 14,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1072,7 +1111,9 @@
       "id": 8,
       "options": {
         "legend": {
-          "calcs": ["last"],
+          "calcs": [
+            "last"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1099,7 +1140,12 @@
     {
       "title": "⚡ Performance & Errors",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 39},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
       "collapsed": false
     },
     {
@@ -1167,7 +1213,10 @@
       "id": 9,
       "options": {
         "legend": {
-          "calcs": ["mean", "max"],
+          "calcs": [
+            "mean",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1256,7 +1305,9 @@
       "id": 10,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1283,7 +1334,12 @@
     {
       "title": "📝 User Activity & Productivity",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 48},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
       "collapsed": false
     },
     {
@@ -1351,7 +1407,9 @@
       "id": 11,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1440,7 +1498,9 @@
       "id": 12,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -1477,7 +1537,12 @@
     {
       "title": "🔍 Event Logs",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 57},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 57
+      },
       "collapsed": false
     },
     {
@@ -1553,42 +1618,75 @@
     {
       "title": "📈 Efficiency, Sessions & Breakdown",
       "type": "row",
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 66},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 66
+      },
       "collapsed": false
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "max": 100,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "red", "value": null},
-              {"color": "yellow", "value": 50},
-              {"color": "green", "value": 90}
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
             ]
           },
           "unit": "percent"
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 67},
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 67
+      },
       "id": 18,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
         "textMode": "auto"
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "100 * sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheRead\"}[$__range])) / sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=~\"cacheRead|input\"}[$__range]))",
           "interval": "",
           "legendFormat": "Cache Hit %",
@@ -1599,10 +1697,15 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisLabel": "USD",
             "axisPlacement": "auto",
@@ -1612,22 +1715,43 @@
             "lineWidth": 2,
             "showPoints": "never",
             "spanNulls": false,
-            "stacking": {"group": "A", "mode": "normal"}
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
           },
           "mappings": [],
           "unit": "currencyUSD"
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 18, "x": 6, "y": 67},
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 67
+      },
       "id": 19,
       "options": {
-        "legend": {"calcs": ["max", "mean"], "displayMode": "table", "placement": "bottom"},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "{{query_source}}",
@@ -1638,10 +1762,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisLabel": "Tokens",
             "axisPlacement": "auto",
@@ -1651,22 +1780,43 @@
             "lineWidth": 2,
             "showPoints": "never",
             "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"}
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           },
           "mappings": [],
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 75},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 75
+      },
       "id": 20,
       "options": {
-        "legend": {"calcs": ["max", "mean"], "displayMode": "table", "placement": "bottom"},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum by (model) (increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "{{model}}",
@@ -1677,10 +1827,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisLabel": "Seconds",
             "axisPlacement": "auto",
@@ -1690,22 +1845,42 @@
             "lineWidth": 2,
             "showPoints": "never",
             "spanNulls": false,
-            "stacking": {"group": "A", "mode": "normal"}
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
           },
           "mappings": [],
           "unit": "s"
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 75},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 75
+      },
       "id": 21,
       "options": {
-        "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum by (type) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "{{type}}",
@@ -1716,10 +1891,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki"},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisLabel": "Decisions",
             "axisPlacement": "auto",
@@ -1729,7 +1909,10 @@
             "lineWidth": 1,
             "showPoints": "never",
             "spanNulls": false,
-            "stacking": {"group": "A", "mode": "normal"}
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
           },
           "mappings": [],
           "min": 0,
@@ -1737,24 +1920,63 @@
         },
         "overrides": [
           {
-            "matcher": {"id": "byName", "options": "accept"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+            "matcher": {
+              "id": "byName",
+              "options": "accept"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
           },
           {
-            "matcher": {"id": "byName", "options": "reject"},
-            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            "matcher": {
+              "id": "byName",
+              "options": "reject"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
           }
         ]
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 83},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 83
+      },
       "id": 22,
       "options": {
-        "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "loki"},
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
           "expr": "sum by (decision) (count_over_time({service_name=\"claude-code\"} |= \"claude_code.tool_decision\" [$__interval]))",
           "interval": "",
           "legendFormat": "{{decision}}",
@@ -1765,10 +1987,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki"},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisLabel": "p95 latency (ms)",
             "axisPlacement": "auto",
@@ -1778,22 +2005,43 @@
             "lineWidth": 2,
             "showPoints": "never",
             "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"}
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           },
           "mappings": [],
           "unit": "ms"
         },
         "overrides": []
       },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 83},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 83
+      },
       "id": 23,
       "options": {
-        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"},
-        "tooltip": {"mode": "multi", "sort": "desc"}
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "loki"},
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
           "expr": "quantile_over_time(0.95, {service_name=\"claude-code\"} |= \"claude_code.api_request\" | unwrap duration_ms [$__interval]) by (model)",
           "interval": "",
           "legendFormat": "{{model}} p95",
@@ -1802,12 +2050,83 @@
       ],
       "title": "API Latency P95 by Model",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 2
+              },
+              {
+                "color": "purple",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "suffix:x"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"cli\"}[$__range])) / sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"user\"}[$__range]))), 1)",
+          "interval": "",
+          "legendFormat": "Productivity",
+          "refId": "A"
+        }
+      ],
+      "title": "Productivity",
+      "type": "stat"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 27,
   "style": "dark",
-  "tags": ["claude-code", "observability"],
+  "tags": [
+    "claude-code",
+    "observability"
+  ],
   "templating": {
     "list": []
   },
@@ -1819,5 +2138,5 @@
   "timezone": "",
   "title": "Claude Code Observability",
   "uid": "claude-code-obs",
-  "version": 1
+  "version": 2
 }

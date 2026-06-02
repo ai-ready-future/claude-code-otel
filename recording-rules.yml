@@ -1,0 +1,27 @@
+groups:
+  - name: productivity_daily
+    interval: 5m
+    rules:
+      - record: cc:cost_usd:daily
+        expr: sum by (user_email) (increase(claude_code_cost_usage_USD_total[1d]))
+      - record: cc:active_seconds:daily
+        expr: sum by (user_email, type) (increase(claude_code_active_time_seconds_total[1d]))
+      - record: cc:leverage:daily
+        expr: |
+          sum by (user_email)(increase(claude_code_active_time_seconds_total{type="cli"}[1d]))
+          /
+          sum by (user_email)(increase(claude_code_active_time_seconds_total{type="user"}[1d]))
+      - record: cc:tokens:daily
+        expr: sum by (user_email, type) (increase(claude_code_token_usage_tokens_total[1d]))
+      - record: cc:cache_hit:daily
+        expr: |
+          sum by (user_email)(increase(claude_code_token_usage_tokens_total{type="cacheRead"}[1d]))
+          /
+          sum by (user_email)(increase(claude_code_token_usage_tokens_total{type=~"input|cacheRead|cacheCreation"}[1d]))
+      - record: cc:cost_per_active_hour:daily
+        expr: |
+          sum by (user_email)(increase(claude_code_cost_usage_USD_total[1d]))
+          /
+          (sum by (user_email)(increase(claude_code_active_time_seconds_total[1d])) / 3600)
+      - record: cc:sessions:daily
+        expr: sum by (user_email, start_type) (increase(claude_code_session_count_total[1d]))
