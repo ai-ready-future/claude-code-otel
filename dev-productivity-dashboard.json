@@ -2,7 +2,7 @@
   "title": "Developer Productivity",
   "uid": "claude-code-dev-productivity",
   "schemaVersion": 27,
-  "version": 2,
+  "version": 3,
   "tags": [
     "claude-code",
     "productivity",
@@ -93,13 +93,13 @@
       "type": "timeseries",
       "title": "First-pass acceptance (%)",
       "datasource": {
-        "type": "loki",
-        "uid": "loki"
+        "type": "prometheus",
+        "uid": "prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval])) / sum(count_over_time({event=\"tool_decision\"} [$__interval]))"
+          "expr": "100 * sum(increase(claude_code_code_edit_tool_decision_total{decision=\"accept\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_code_edit_tool_decision_total{user_email=~\"$user\"}[$__interval]))"
         }
       ],
       "gridPos": {
@@ -148,13 +148,13 @@
       "type": "timeseries",
       "title": "Accepted edits per active hour",
       "datasource": {
-        "type": "loki",
-        "uid": "loki"
+        "type": "prometheus",
+        "uid": "prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
+          "expr": "sum(increase(claude_code_code_edit_tool_decision_total{decision=\"accept\",user_email=~\"$user\"}[$__interval]))"
         }
       ],
       "gridPos": {
@@ -175,7 +175,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({event=\"tool_result\"} [$__interval]))"
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" [$__interval]))"
         }
       ],
       "gridPos": {
@@ -217,15 +217,19 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval]))"
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "refId": "B",
           "datasource": {
-            "type": "loki",
-            "uid": "loki"
+            "type": "prometheus",
+            "uid": "prometheus"
           },
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
+          "expr": "sum(increase(claude_code_code_edit_tool_decision_total{decision=\"accept\",user_email=~\"$user\"}[$__interval]))"
         }
       ],
       "transformations": [
@@ -286,27 +290,6 @@
       "panels": []
     },
     {
-      "id": 10,
-      "type": "timeseries",
-      "title": "Retry tax (attempt > 1)",
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (status_code) (count_over_time({event=\"api_error\"} | attempt > 1 [$__interval]))"
-        }
-      ],
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 35
-      }
-    },
-    {
       "id": 11,
       "type": "timeseries",
       "title": "Tool failure cost proxy",
@@ -317,13 +300,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(sum_over_time({event=\"tool_result\"} | success=\"false\" | unwrap duration_ms [$__interval]))"
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | success=\"false\" | unwrap duration_ms [$__interval]))"
         }
       ],
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 8,
+        "w": 12,
+        "x": 0,
         "y": 35
       }
     },
@@ -338,13 +321,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"reject\" [$__interval]))"
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | decision=\"reject\" [$__interval]))"
         }
       ],
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 16,
+        "w": 12,
+        "x": 12,
         "y": 35
       }
     }
