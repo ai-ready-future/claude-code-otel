@@ -2,7 +2,7 @@
   "title": "Executive / ROI",
   "uid": "claude-code-exec-roi",
   "schemaVersion": 27,
-  "version": 2,
+  "version": 9,
   "tags": [
     "claude-code",
     "productivity",
@@ -72,7 +72,7 @@
   "panels": [
     {
       "type": "row",
-      "title": "ROI Headline",
+      "title": "Value & Leverage",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -85,8 +85,9 @@
     },
     {
       "id": 1,
-      "type": "timeseries",
-      "title": "Leverage multiplier (Nx)",
+      "type": "stat",
+      "title": "Leverage — agent hrs per human hr (7d)",
+      "description": "Agent (CLI) active-time ÷ your active-time over a FIXED trailing 7d window (ratio-of-sums, no idle-bucket 0/0 spikes). ~12.6× means each hour you put in bought ~12.6 hours of agent work. <1× is the single red line — the one genuinely-bad case (you out-working the agent). user_email filter is cosmetic on this single-user host.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -94,20 +95,63 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[$__interval])) / sum(increase(claude_code_active_time_seconds_total{type=\"user\",user_email=~\"$user\"}[$__interval]))), 1)"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(claude_code_active_time_seconds_total{type=\"cli\",user_email=~\"$user\"}[7d])) / sum(increase(claude_code_active_time_seconds_total{type=\"user\",user_email=~\"$user\"}[7d]))"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix:×",
+          "decimals": 1,
+          "displayName": "Leverage",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 1
       }
     },
     {
       "id": 2,
-      "type": "timeseries",
-      "title": "Quality-adjusted activity",
+      "type": "stat",
+      "title": "Cost per line of code (7d)",
+      "description": "Total spend ÷ lines of code ADDED over a fixed 7d window — the unit economics of generated code (~$0.037/line). Denominator is type=\"added\" only: net (added−removed) risks divide-by-near-zero or negatives on refactor-heavy days. Neutral color: cheaper isn't automatically better (a $0.50/line security fix can beat 100 cheap boilerplate lines); judge the trend against your own baseline.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -115,43 +159,101 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval]))"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{user_email=~\"$user\"}[7d])) / sum(increase(claude_code_lines_of_code_count_total{type=\"added\",user_email=~\"$user\"}[7d]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 3,
+          "displayName": "$ / line",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
         },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Output tokens per prompt (7d)",
+      "description": "Model output tokens (api_request) ÷ number of human prompts (user_prompt), ratio-of-sums over a FIXED 7d window. Output DENSITY / leverage-per-ask: how much autonomous work each instruction you type drives. Loki structured-metadata selectors (| event_name=). Neutral color: higher is generally more leverage but it's not a quality threshold.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
         {
-          "refId": "B",
+          "refId": "A",
           "datasource": {
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval])) / sum(count_over_time({event=\"tool_decision\"} [$__interval]))"
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=`api_request` | unwrap output_tokens [7d])) / sum(count_over_time({service_name=\"claude-code\"} | event_name=`user_prompt` [7d]))"
         }
       ],
-      "transformations": [
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "calculateField",
-          "options": {
-            "mode": "binary",
-            "operator": "*",
-            "left": "A",
-            "right": "B",
-            "replaceFields": true
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "displayName": "Output tok / prompt",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
           }
-        }
-      ],
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 1
       }
     },
     {
       "type": "row",
-      "title": "Cost",
+      "title": "Cost & Savings",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -164,8 +266,9 @@
     },
     {
       "id": 3,
-      "type": "timeseries",
-      "title": "Total cost (daily)",
+      "type": "stat",
+      "title": "Spend — last 24h",
+      "description": "Total Claude Code spend over the trailing day, from the cc:cost_usd:daily recording rule (honest pre-aggregated daily total — the old inline increase(...[$__interval]) made 'daily' depend on time-picker zoom). The core ROI denominator. Neutral color: spend volume is not a quality signal.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -173,9 +276,39 @@
       "targets": [
         {
           "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(cc:cost_usd:daily{user_email=~\"$user\"})"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "displayName": "Spend / 24h",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -185,8 +318,9 @@
     },
     {
       "id": 4,
-      "type": "timeseries",
-      "title": "Cost per active hour",
+      "type": "stat",
+      "title": "Cost per active hour (last 24h)",
+      "description": "Dollars burned per hour of agent activity, from the cc:cost_per_active_hour:daily recording rule. The headline efficiency number. Using the rule avoids the $__interval idle-bucket 0/0 spikes and the cli+user double-counted denominator the old inline expr had. Neutral color.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -194,9 +328,39 @@
       "targets": [
         {
           "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "expr": "sum(cc:cost_per_active_hour:daily{user_email=~\"$user\"})"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "displayName": "$ / active hr",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -205,9 +369,10 @@
       }
     },
     {
-      "id": 5,
-      "type": "timeseries",
-      "title": "Cost of rejected work ($)",
+      "id": 9,
+      "type": "stat",
+      "title": "Cache $ saved (vs full input price)",
+      "description": "Dollars avoided by prompt-cache reuse vs paying full input price, summed PER MODEL over the visible range: cacheRead MTok × (input_rate − cacheRead_rate). Rates $/MTok: Opus 15.00−1.50, Sonnet 3.00−0.30, Haiku 1.00−0.10 (regexes also catch [1m] tiers). Traffic is ~92% Opus, so the old single Sonnet constant understated savings ~4.6× (~$1.4k vs ~$6.4k/7d). With a ~93% cache-hit rate this is one of the strongest ROI stories on the dashboard.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -215,33 +380,39 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{user_email=~\"$user\"}[$__interval]))"
-        },
-        {
-          "refId": "B",
           "datasource": {
-            "type": "loki",
-            "uid": "loki"
+            "type": "prometheus",
+            "uid": "prometheus"
           },
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"reject\" [$__interval])) / sum(count_over_time({event=\"tool_decision\"} [$__interval]))"
+          "expr": "sum((increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",model=~\".*opus.*\",user_email=~\"$user\"}[$__range])/1e6)*(15.00-1.50)) + sum((increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",model=~\".*sonnet.*\",user_email=~\"$user\"}[$__range])/1e6)*(3.00-0.30)) + sum((increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",model=~\".*haiku.*\",user_email=~\"$user\"}[$__range])/1e6)*(1.00-0.10))"
         }
       ],
-      "transformations": [
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "calculateField",
-          "options": {
-            "mode": "binary",
-            "operator": "*",
-            "left": "A",
-            "right": "B",
-            "replaceFields": true
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 0,
+          "displayName": "Cache $ saved",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
           }
-        }
-      ],
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -250,130 +421,23 @@
       }
     },
     {
-      "id": 8,
-      "type": "timeseries",
-      "title": "Spend by model and query_source",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (model, query_source) (increase(claude_code_cost_usage_USD_total{user_email=~\"$user\"}[$__interval]))"
-        }
-      ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 18
-      }
-    },
-    {
-      "id": 9,
-      "type": "timeseries",
-      "title": "Cache $ saved",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\",user_email=~\"$user\"}[$__range])) / 1e6) * ($price_input_sonnet45 - $price_cacheread_sonnet45)"
-        }
-      ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 18
-      }
-    },
-    {
       "type": "row",
-      "title": "Output & Adoption",
+      "title": "Usage & Allocation",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 18
       },
       "id": 1003,
       "panels": []
     },
     {
-      "id": 6,
-      "type": "timeseries",
-      "title": "Accepted edits over time",
-      "datasource": {
-        "type": "loki",
-        "uid": "loki"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(count_over_time({event=\"tool_decision\"} | decision=\"accept\" [$__interval]))"
-        }
-      ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 27
-      }
-    },
-    {
-      "id": 7,
-      "type": "timeseries",
-      "title": "Output per prompt",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"output\",user_email=~\"$user\"}[$__interval]))"
-        },
-        {
-          "refId": "B",
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "expr": "sum(count_over_time({event=\"user_prompt\"} [$__interval]))"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "calculateField",
-          "options": {
-            "mode": "binary",
-            "operator": "/",
-            "left": "A",
-            "right": "B",
-            "replaceFields": true
-          }
-        }
-      ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 27
-      }
-    },
-    {
       "id": 10,
-      "type": "timeseries",
-      "title": "Active time by type + adoption",
+      "type": "stat",
+      "title": "Engaged hours — last 24h",
+      "description": "Total engaged time (agent + human active-time) over the trailing 24h (~11.7h), FIXED [1d] window so the headline number doesn't shift with the time-picker. The area sparkline carries the usage/adoption trend. Replaces the old cli-vs-user bars, which just re-plotted the Leverage headline. Neutral color: usage volume is not quality.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -381,18 +445,141 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (type) (increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[$__interval]))"
-        },
-        {
-          "refId": "B",
-          "expr": "sum by (start_type) (cc:sessions:daily{user_email=~\"$user\"})"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(claude_code_active_time_seconds_total{user_email=~\"$user\"}[1d]))/3600"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 1,
+          "displayName": "Engaged hrs / 24h",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calc": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto",
+        "justifyMode": "auto"
+      },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 8,
         "x": 0,
-        "y": 35
+        "y": 19
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Spend by work type — interactive vs. autonomous",
+      "description": "Daily spend split by WHAT the call was doing: Interactive (you prompting the main agent), Autonomous (sub-agents doing delegated work without you in the loop), and Overhead (background helpers: titles, quota/context checks). The dollar view of leverage — how much of the bill is delegated/automated vs. you typing (~$403 interactive / $143 autonomous / $31 overhead per 7d). Source label is query_source (main/subagent/auxiliary), relabeled in the legend via field overrides. Stacked daily bars; counter increase() over a fixed [1d] bucket.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (query_source)(increase(claude_code_cost_usage_USD_total{user_email=~\"$user\"}[1d]))",
+          "legendFormat": "{{query_source}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "main"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Interactive"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "subagent"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Autonomous"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "auxiliary"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Overhead"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "sum",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 19
       }
     }
   ]
