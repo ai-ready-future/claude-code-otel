@@ -2118,6 +2118,72 @@
       ],
       "title": "Productivity",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "Average true context window sent to the model per API request, broken down by model. Context window = input_tokens + cache_read_tokens + cache_creation_tokens (most context is served from cache, so input_tokens alone massively understates it). Auto-scaled to K via the 'short' unit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Context tokens",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 91
+      },
+      "id": 25,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "avg_over_time({service_name=\"claude-code\"} |= \"claude_code.api_request\" | unwrap input_tokens [$__interval]) by (model) + avg_over_time({service_name=\"claude-code\"} |= \"claude_code.api_request\" | unwrap cache_read_tokens [$__interval]) by (model) + avg_over_time({service_name=\"claude-code\"} |= \"claude_code.api_request\" | unwrap cache_creation_tokens [$__interval]) by (model)",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Context Window Size (K tokens)",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
