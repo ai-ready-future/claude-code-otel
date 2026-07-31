@@ -359,7 +359,7 @@
       "id": 1003,
       "type": "barchart",
       "title": "Delegation vs Coding ROI",
-      "description": "Per-session delegation ratio (Task/Agent tool_result calls divided by Edit/Write/MultiEdit/NotebookEdit tool_result calls) bucketed against edit accept-rate from tool_decision events. Correlation, not causation: hard tasks can cause more delegation, so a high-delegation quality dip may reflect task difficulty rather than delegation harm. Shows N per bucket so sparse buckets are visible. Sessions with zero edit decisions are excluded from the accept-rate average.",
+      "description": "Per-session delegation ratio (Task/Agent tool_result calls divided by Edit/Write/MultiEdit/NotebookEdit tool_result calls) bucketed against edit accept-rate from tool_decision events. Correlation, not causation: hard tasks can cause more delegation, so a high-delegation quality dip may reflect task difficulty rather than delegation harm. Shows N per bucket so sparse buckets are visible. Sessions with zero edit decisions are excluded from the accept-rate average.\n\nHow the bucket is chosen: `bucket_formula` = min(floor(ratio * 3), 3), which puts each session in one of four buckets by its delegation ratio. The ratio is not a number when a session has delegation calls but no edits, so `bucket_override` sends that session to the highest bucket, and `ifnan` selects the override only in that case.",
       "datasource": {
         "type": "loki",
         "uid": "loki"

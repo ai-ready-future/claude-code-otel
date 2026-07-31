@@ -307,8 +307,8 @@
     {
       "id": 11,
       "type": "barchart",
-      "title": "Requests by Context Band (avg cost/req in label)",
-      "description": "One bar per 100k context band; bar height = api_request count (main thread, request-banded by its own context size). Each band's x-axis label carries the average cost/req over the last 14d \u2014 baked at deploy time, refreshed on rebuild.",
+      "title": "Requests by Context Band",
+      "description": "One bar per 100k context band. Bar height is the api_request count, main thread only, with each request put in the band of its own context size.\n\nFor the cost of each band, read the Cost/req column in the table below. That column is calculated from your own data at view time.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -329,7 +329,7 @@
           "queryType": "instant",
           "instant": true,
           "legendFormat": "",
-          "expr": "sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ $b := div (int .ctx) 100000 }}{{ if eq $b 0 }}0\u2013100k \u00b7 $0.10{{ else if eq $b 1 }}100\u2013200k \u00b7 $0.12{{ else if eq $b 2 }}200\u2013300k \u00b7 $0.16{{ else }}300k+ \u00b7 $0.21{{ end }}` [$__range]))"
+          "expr": "sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ $b := div (int .ctx) 100000 }}{{ if eq $b 0 }}0\u2013100k{{ else if eq $b 1 }}100\u2013200k{{ else if eq $b 2 }}200\u2013300k{{ else }}300k+{{ end }}` [$__range]))"
         }
       ],
       "transformations": [
@@ -414,7 +414,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "0\u2013100k \u00b7 $0.10"
+              "options": "0\u2013100k"
             },
             "properties": [
               {
@@ -429,7 +429,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "100\u2013200k \u00b7 $0.12"
+              "options": "100\u2013200k"
             },
             "properties": [
               {
@@ -444,7 +444,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "200\u2013300k \u00b7 $0.16"
+              "options": "200\u2013300k"
             },
             "properties": [
               {
@@ -459,7 +459,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "300k+ \u00b7 $0.21"
+              "options": "300k+"
             },
             "properties": [
               {
@@ -478,7 +478,7 @@
       "id": 5,
       "type": "table",
       "title": "Context Band x Cost/Latency (per request, main thread)",
-      "description": "Each api_request bucketed by its OWN context size (input + cache_read + cache_creation tokens), main thread only. Per-band ratios are computed server-side in LogQL; the table only joins the columns on the band index. Band N = context in [N*100k, (N+1)*100k).",
+      "description": "Each api_request bucketed by its OWN context size (input + cache_read + cache_creation tokens), main thread only. Per-band ratios are computed server-side in LogQL; the table only joins the columns on the band index. Band N = context in [N*100k, (N+1)*100k).\n\nAll five queries share the same prefix: the stream selector, the query_source filter, and the two label_format steps that make `ctx` and `band`. LogQL permits only one `unwrap` per query, which is why they are five targets and not one. Keep the prefixes the same in all five if you change the band width or the filters.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
