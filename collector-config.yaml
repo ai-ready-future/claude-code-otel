@@ -21,18 +21,14 @@ exporters:
     # increment once and never update; the default ~5m expiration drops them from
     # /metrics, breaking "Active Sessions" and similar panels. Hold series for 24h.
     metric_expiration: 24h
-    # Without this, the exporter maps service.name -> job and
-    # service.instance.id -> instance, then DROPS every other resource
-    # attribute. host.name, host.arch, os.type, os.version and service.version
-    # then never reach Prometheus, and no target_info series exists to join
-    # against either. Logs keep the attributes (they flow through otlphttp
-    # untouched), which makes the loss hard to see: the same fleet looks
-    # labelled in Loki and unlabelled in Prometheus.
-    # The "Session Detail" panels (Sessions table, Total Tokens by Host) need
-    # these labels; without this setting they collapse to one blank series.
-    # Cardinality stays bounded — the resource set is a handful of
-    # low-cardinality attributes. Session and user identifiers are metric
-    # attributes, not resource attributes, so they are unaffected.
+    # Keep resource attributes as Prometheus labels. Without this the exporter
+    # keeps only service.name (as job) and service.instance.id, and drops
+    # host.name, host.arch, os.type, os.version and service.version. The
+    # "Session Detail" panels filter on host_name, so they stay empty.
+    # The loss is hard to see, because logs keep the attributes: the same
+    # machines look labelled in Loki and unlabelled in Prometheus.
+    # Cardinality stays low — these are a few fixed attributes. Session and
+    # user IDs are metric attributes, not resource attributes.
     resource_to_telemetry_conversion:
       enabled: true
 
