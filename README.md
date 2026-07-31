@@ -98,6 +98,16 @@ claude
 - **Grafana**: http://localhost:3333
 - **Prometheus**: http://localhost:9090
 
+Five dashboards are provisioned automatically:
+
+| Dashboard | UID | What it answers |
+|-----------|-----|-----------------|
+| Claude Code Observability | `claude-code-obs` | Live cost, tokens, tools, errors, and per-session detail |
+| Developer Productivity | `claude-code-dev-productivity` | Output per developer, plus delegation vs. hands-on coding |
+| Executive ROI | `claude-code-exec-roi` | Daily cost, leverage, and cache efficiency trends |
+| Claude Code CodeBurn OTEL | `claude-code-codeburn` | Burn rate of tokens and cost against code produced |
+| Context Window Analytics | `claude-code-context-analytics` | Context size distribution, big-context cost, and latency |
+
 > 🖼️ **Visual Guide**: Check out the [Dashboard Screenshots](#-dashboard-screenshots) to see what your dashboards will look like!
 
 ## 📊 Available Metrics
@@ -163,7 +173,13 @@ Access comprehensive analytics through the Grafana dashboard at http://localhost
 The Grafana dashboard is organized into sections reflecting the observability documentation recommendations:
 
 ### 📊 Overview
-- Active sessions, cost, token usage, lines of code changed
+- Active sessions, cost, token usage, lines of code changed, productivity
+- Each stat shows the last hour, as the title states
+
+### 🗂 Session Detail
+- One table row per session, newest first, with tokens, cost, active time, and host
+- Total tokens by host, to show which machines send the data
+- Needs `resource_to_telemetry_conversion` in `collector-config.yaml`; without it the host labels stay empty
 
 ### 💰 Cost & Usage Analysis  
 - Cost trends by model, token usage breakdown

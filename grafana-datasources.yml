@@ -1,18 +1,39 @@
 apiVersion: 1
 
+# The uid of each datasource is pinned, so that dashboards can refer to it by a
+# stable name. Without a pinned uid, Grafana makes a random one (for example
+# P1809F7CD0C75ACF3), and every dashboard that refers to uid "prometheus" or
+# "loki" resolves to nothing: variable lists come up empty and panels show no
+# data.
+#
+# deleteDatasources removes the earlier (random-uid) entries by name first, so
+# that the block below can make them again with the pinned uid. Without this,
+# Grafana stops provisioning with "data source not found" when the uid of an
+# already-provisioned datasource changes, and the container restarts in a loop.
+deleteDatasources:
+  - name: prometheus
+    orgId: 1
+  - name: loki
+    orgId: 1
+  - name: alertmanager
+    orgId: 1
+
 datasources:
   - name: prometheus
     type: prometheus
+    uid: prometheus
     access: proxy
     url: http://prometheus:9090
     isDefault: true
 
   - name: loki
     type: loki
+    uid: loki
     access: proxy
     url: http://loki:3100
-    
+
   - name: alertmanager
     type: alertmanager
+    uid: alertmanager
     access: proxy
     url: http://alertmanager:9093

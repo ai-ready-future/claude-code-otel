@@ -5,6 +5,7 @@
 ```bash
 rsync -av --relative \
   claude-code-dashboard.json dev-productivity-dashboard.json exec-roi-dashboard.json \
+  claude-code-codeburn.json claude-code-context-analytics.json \
   docker-compose.yml prometheus.yml recording-rules.yml \
   collector-config.yaml loki-config.yaml \
   nuc01:/home/jazz/claude-code-otel/

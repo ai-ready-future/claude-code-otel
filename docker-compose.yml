@@ -61,6 +61,8 @@ services:
       - ./claude-code-dashboard.json:/var/lib/grafana/dashboards/claude-code-dashboard.json:ro
       - ./dev-productivity-dashboard.json:/var/lib/grafana/dashboards/dev-productivity-dashboard.json:ro
       - ./exec-roi-dashboard.json:/var/lib/grafana/dashboards/exec-roi-dashboard.json:ro
+      - ./claude-code-codeburn.json:/var/lib/grafana/dashboards/claude-code-codeburn.json:ro
+      - ./claude-code-context-analytics.json:/var/lib/grafana/dashboards/claude-code-context-analytics.json:ro
     ports:
       - "127.0.0.1:3333:3000"
     restart: unless-stopped
