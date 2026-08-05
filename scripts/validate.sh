@@ -66,9 +66,12 @@ done
 # 6. Regression guard: every dashboard must be mounted into Grafana. A dashboard
 #    added to the repo but not to the compose file is invisible at runtime, and
 #    nothing else reports it.
+#    Only files that are dashboards are checked: a root-level *.json that is not
+#    a dashboard (a package manifest, a fixture) has no business being mounted.
 echo "▸ dashboard provisioning"
 for f in *.json; do
   [ -e "$f" ] || continue
+  jq -e 'has("panels")' "$f" >/dev/null 2>&1 || continue
   if grep -q "\./$f:/var/lib/grafana/dashboards/" docker-compose.yml; then pass "$f mounted into grafana"
   else fail "$f is not mounted in docker-compose.yml — Grafana never loads it"; fi
 done

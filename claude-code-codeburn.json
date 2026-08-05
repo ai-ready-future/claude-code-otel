@@ -8,7 +8,7 @@
     "codeburn",
     "otel"
   ],
-  "refresh": "30s",
+  "refresh": "5m",
   "time": {
     "from": "now-7d",
     "to": "now"
@@ -164,7 +164,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (session_id) (claude_code_session_count_total{job=\"otel-collector\"}))",
+          "expr": "count(count by (session_id) (max_over_time(claude_code_session_count_total{job=\"otel-collector\"}[$__range])))",
           "legendFormat": "Sessions"
         }
       ],
@@ -484,7 +484,7 @@
       "id": 9,
       "type": "barchart",
       "title": "Daily Activity",
-      "description": "Daily cost and call-count proxy from Prometheus. Calls use changes(claude_code_cost_usage_USD_total[1d]) to avoid a mixed datasource panel.",
+      "description": "Daily cost and call-count proxy from Prometheus. Calls use changes(claude_code_cost_usage_USD_total[1d]) to avoid a mixed datasource panel. Calls is a LOWER BOUND, not a count: changes() counts scrape-to-scrape value changes, so all calls inside one 15s scrape count as one, and a call that adds no cost counts as none. Read the \"API Calls\" stat above for the true count from Loki.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -547,7 +547,7 @@
       "id": 10,
       "type": "table",
       "title": "By Model",
-      "description": "Model-level cost, cache percentage, and call-count proxy from OTEL Prometheus metrics.",
+      "description": "Model-level cost, cache percentage, and call-count proxy from OTEL Prometheus metrics. Calls is a LOWER BOUND, not a count: changes() counts scrape-to-scrape value changes, so all calls inside one 15s scrape count as one, and a call that adds no cost counts as none.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -672,7 +672,7 @@
       "id": 11,
       "type": "bargauge",
       "title": "Core Tools",
-      "description": "Tool calls by tool_name from Loki tool_result events.",
+      "description": "Built-in tool calls by tool_name from Loki tool_result events. Skill, Agent, Task and mcp_tool are excluded here, because the two panels beside this one count them; without the exclusion the three panels count the same calls twice.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -684,7 +684,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name!~\"Skill|Agent|Task|mcp_tool\" [$__range]))",
           "legendFormat": "{{tool_name}}",
           "queryType": "instant",
           "instant": true

@@ -345,6 +345,7 @@
         "y": 1
       },
       "id": 24,
+      "description": "Agent (CLI) active time divided by your active time over the selected range, rounded down and never less than 1x. This stat follows the time picker; the four stats beside it are pinned to the last hour. Reads \"No data\" when the range holds no user active time, because the ratio has no denominator.",
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -365,7 +366,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"cli\"}[$__range])) / sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"user\"}[$__range]))), 1)",
+          "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"cli\"}[$__range])) / (sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"user\"}[$__range])) > 0)), 1)",
           "interval": "",
           "legendFormat": "Productivity",
           "refId": "A"
@@ -511,7 +512,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, type, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -522,7 +523,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -533,7 +534,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_active_time_seconds_total{job=\"otel-collector\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, type) (max_over_time(claude_code_active_time_seconds_total{job=\"otel-collector\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -544,7 +545,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"input\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"input\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -555,7 +556,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"output\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"output\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -566,7 +567,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheRead\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheRead\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -577,7 +578,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (session_id) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheCreation\"}[$__range]))",
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheCreation\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
