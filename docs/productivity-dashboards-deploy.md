@@ -4,9 +4,10 @@
 
 ```bash
 rsync -av --relative \
-  claude-code-dashboard.json dev-productivity-dashboard.json exec-roi-dashboard.json \
+  *.json \
   docker-compose.yml prometheus.yml recording-rules.yml \
   collector-config.yaml loki-config.yaml \
+  grafana-datasources.yml grafana-dashboards.yml \
   nuc01:/home/jazz/claude-code-otel/
 ```
 

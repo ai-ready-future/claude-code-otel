@@ -24,7 +24,7 @@
   "liveNow": false,
   "panels": [
     {
-      "title": "📊 Overview",
+      "title": "\ud83d\udcca Overview",
       "type": "row",
       "gridPos": {
         "h": 1,
@@ -93,13 +93,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[$__range]) > 0))",
+          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{job=\"otel-collector\"}[1h]) > 0))",
           "interval": "",
           "legendFormat": "Active Sessions",
           "refId": "A"
         }
       ],
-      "title": "Active Sessions",
+      "title": "Active Sessions (1h)",
       "type": "stat"
     },
     {
@@ -161,13 +161,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range]))",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "Cost (1h)",
           "refId": "A"
         }
       ],
-      "title": "Cost",
+      "title": "Cost (Last Hour)",
       "type": "stat"
     },
     {
@@ -229,13 +229,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[$__range]))",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "Tokens (1h)",
           "refId": "A"
         }
       ],
-      "title": "Token Usage",
+      "title": "Token Usage (1h)",
       "type": "stat"
     },
     {
@@ -297,23 +297,643 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(claude_code_lines_of_code_count_total{job=\"otel-collector\"}[$__range]))",
+          "expr": "sum(increase(claude_code_lines_of_code_count_total{job=\"otel-collector\"}[1h]))",
           "interval": "",
           "legendFormat": "Lines Changed (1h)",
           "refId": "A"
         }
       ],
-      "title": "Lines of Code",
+      "title": "Lines of Code (1h)",
       "type": "stat"
     },
     {
-      "title": "💰 Cost & Usage Analysis",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 2
+              },
+              {
+                "color": "purple",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "suffix:x"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
+      "id": 24,
+      "description": "Agent (CLI) active time divided by your active time over the selected range, rounded down and never less than 1x. This stat follows the time picker; the four stats beside it are pinned to the last hour. Reads \"No data\" when the range holds no user active time, because the ratio has no denominator.",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"cli\"}[$__range])) / (sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"user\"}[$__range])) > 0)), 1)",
+          "interval": "",
+          "legendFormat": "Productivity",
+          "refId": "A"
+        }
+      ],
+      "title": "Productivity",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "title": "\ud83d\uddc2 Session Detail",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 5
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "One line per host. Each line is a running total of tokens used by that host across the selected time range \u2014 the height at the right edge is the host's total for the range.\n\nHost comes from `OTEL_RESOURCE_ATTRIBUTES=\"host.name=<hostname>\"`. A machine that has not been configured reads `unknown`.\n\nReads with `increase(...[$__range])`, the same running-total method as **Cumulative Tool Usage** below. Wide ranges (weeks) make this query slower.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Total tokens",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 27,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (host_name) (increase(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[$__range]))",
+          "interval": "",
+          "legendFormat": "{{host_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Tokens by Host",
+      "type": "timeseries"
+    },
+    {
+      "id": 26,
+      "type": "table",
+      "title": "Sessions \u2014 one row per session, newest first",
+      "description": "One row per Claude Code session in the selected range.\n\n**Host** comes from `OTEL_RESOURCE_ATTRIBUTES=\"host.name=<hostname>\"`, set on each client. Claude Code has no built-in hostname attribute, so a machine without this setting reads `unknown`. OS, arch and version stay blank unless `resource_to_telemetry_conversion` is enabled on the Prometheus exporter in `collector-config.yaml`.\n\nClaude Code sends no session name, only `session_id`, so **Session** shows the raw ID.\n\n**Active time** is real working time and is exact. Use it.\n\n**Session time** is `Last seen \u2212 Started`. It shows how long the process ran, not how long you worked. A session left open in tmux spans days while its active time stays at minutes. It is also **up to `metric_expiration` too long** (24h with the shipped collector config) and never reads less than 10m: the collector holds each series after a session ends, and the timestamps come from a subquery with a 10-minute step. Do not read it as billable time.\n\nOne session can appear with two different label sets in the same range, if the collector configuration changed while the session ran. The query keeps the most complete set, so each session stays on one row.\n\nCounters are read with `max_over_time`, so a collector restart in the middle of the range shows the peak, not the sum. Ranges longer than a few weeks are slow, because Started, Last seen and Session time are subqueries.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(topk by (session_id) (1, (count by (session_id, host_name, os_type, os_version, host_arch, terminal_type, service_version) (max_over_time({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\", host_name!=\"\"}[$__range])) * 0 + 3) or (count by (session_id, host_name, os_type, os_version, host_arch, terminal_type, service_version) (max_over_time({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\", os_type!=\"\"}[$__range])) * 0 + 2) or (count by (session_id, host_name, os_type, os_version, host_arch, terminal_type, service_version) (max_over_time({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\"}[$__range])) * 0 + 1)), \"host_name\", \"unknown\", \"host_name\", \"^$\")",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, type, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_cost_usage_USD_total{job=\"otel-collector\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, type) (max_over_time(claude_code_active_time_seconds_total{job=\"otel-collector\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"input\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"output\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheRead\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (session_id) (max by (session_id, model) (max_over_time(claude_code_token_usage_tokens_total{job=\"otel-collector\", type=\"cacheCreation\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "min by (session_id) (min_over_time(timestamp({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\"})[$__range:10m])) * 1000",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "I"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (session_id) (max_over_time(timestamp({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\"})[$__range:10m])) * 1000",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "J"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (session_id) (max_over_time(timestamp({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\"})[$__range:10m])) - min by (session_id) (min_over_time(timestamp({__name__=~\"claude_code_(token_usage_tokens|active_time_seconds|cost_usage_USD)_total\", job=\"otel-collector\"})[$__range:10m]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "K"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "session_id",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Time 6": true,
+              "Time 7": true,
+              "Time 8": true,
+              "Time 9": true,
+              "Time 10": true,
+              "Time 11": true,
+              "Time 12": true
+            },
+            "renameByName": {
+              "session_id": "Session",
+              "host_name": "Host",
+              "os_type": "OS",
+              "os_version": "OS version",
+              "host_arch": "Arch",
+              "terminal_type": "Terminal",
+              "service_version": "Claude Code",
+              "Value #B": "Total tokens",
+              "Value #C": "Cost",
+              "Value #D": "Active time",
+              "Value #E": "Input",
+              "Value #F": "Output",
+              "Value #G": "Cache read",
+              "Value #H": "Cache write",
+              "Value #I": "Started",
+              "Value #J": "Last seen",
+              "Value #K": "Session time"
+            },
+            "indexByName": {
+              "session_id": 0,
+              "Session": 0,
+              "host_name": 1,
+              "Host": 1,
+              "Value #B": 2,
+              "B": 2,
+              "Total tokens": 2,
+              "Value #K": 3,
+              "K": 3,
+              "Session time": 3,
+              "Value #D": 4,
+              "D": 4,
+              "Active time": 4,
+              "Value #C": 5,
+              "C": 5,
+              "Cost": 5,
+              "Value #I": 6,
+              "I": 6,
+              "Started": 6,
+              "Value #J": 7,
+              "J": 7,
+              "Last seen": 7,
+              "Value #E": 8,
+              "E": 8,
+              "Input": 8,
+              "Value #F": 9,
+              "F": 9,
+              "Output": 9,
+              "Value #G": 10,
+              "G": 10,
+              "Cache read": 10,
+              "Value #H": 11,
+              "H": 11,
+              "Cache write": 11,
+              "os_type": 12,
+              "OS": 12,
+              "os_version": 13,
+              "OS version": 13,
+              "host_arch": 14,
+              "Arch": 14,
+              "terminal_type": 15,
+              "Terminal": 15,
+              "service_version": 16,
+              "Claude Code": 16
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true,
+            "inspect": false
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Session time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.width",
+                "value": 165
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last seen"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.width",
+                "value": 165
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Session"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Active time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cost"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 95
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total tokens"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Input"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Output"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cache read"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cache write"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "Cost",
+            "Total tokens",
+            "Input",
+            "Output",
+            "Cache read",
+            "Cache write",
+            "Active time"
+          ]
+        },
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Started"
+          }
+        ]
+      }
+    },
+    {
+      "title": "\ud83d\udcb0 Cost & Usage Analysis",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
       },
       "collapsed": false
     },
@@ -377,7 +997,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 29
       },
       "id": 5,
       "options": {
@@ -547,7 +1167,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 29
       },
       "id": 6,
       "options": {
@@ -678,7 +1298,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 37
       },
       "id": 15,
       "options": {
@@ -712,13 +1332,13 @@
       "type": "timeseries"
     },
     {
-      "title": "🔧 Tool Usage & Performance",
+      "title": "\ud83d\udd27 Tool Usage & Performance",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 45
       },
       "collapsed": false
     },
@@ -852,7 +1472,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 46
       },
       "id": 7,
       "options": {
@@ -1007,7 +1627,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 46
       },
       "id": 14,
       "options": {
@@ -1106,7 +1726,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 46
       },
       "id": 8,
       "options": {
@@ -1138,13 +1758,13 @@
       "type": "timeseries"
     },
     {
-      "title": "⚡ Performance & Errors",
+      "title": "\u26a1 Performance & Errors",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 62
       },
       "collapsed": false
     },
@@ -1208,7 +1828,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 40
+        "y": 63
       },
       "id": 9,
       "options": {
@@ -1300,7 +1920,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 40
+        "y": 63
       },
       "id": 10,
       "options": {
@@ -1332,13 +1952,13 @@
       "type": "timeseries"
     },
     {
-      "title": "📝 User Activity & Productivity",
+      "title": "\ud83d\udcdd User Activity & Productivity",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 71
       },
       "collapsed": false
     },
@@ -1402,7 +2022,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 49
+        "y": 72
       },
       "id": 11,
       "options": {
@@ -1493,7 +2113,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 49
+        "y": 72
       },
       "id": 12,
       "options": {
@@ -1535,13 +2155,13 @@
       "type": "timeseries"
     },
     {
-      "title": "🔍 Event Logs",
+      "title": "\ud83d\udd0d Event Logs",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 57
+        "y": 80
       },
       "collapsed": false
     },
@@ -1554,7 +2174,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 81
       },
       "id": 13,
       "options": {
@@ -1573,7 +2193,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=\"claude-code\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.tool_name}}] {{if eq .success \\\"true\\\"}}✅{{else}}❌{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
+          "expr": "{service_name=\"claude-code\"} |= \"claude_code.tool_result\" | line_format \"{{.event_timestamp}} [{{.tool_name}}] {{if eq .success \\\"true\\\"}}\u2705{{else}}\u274c{{end}} {{.duration_ms}}ms {{if .error}}ERROR: {{.error}}{{end}}\"",
           "refId": "A"
         }
       ],
@@ -1589,7 +2209,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 81
       },
       "id": 17,
       "options": {
@@ -1608,7 +2228,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service_name=\"claude-code\"} |= \"claude_code.api_error\" | line_format \"{{.event_timestamp}} [{{.model}}] ❌ HTTP {{.status_code}} {{.duration_ms}}ms ERROR: {{.error}}\"",
+          "expr": "{service_name=\"claude-code\"} |= \"claude_code.api_error\" | line_format \"{{.event_timestamp}} [{{.model}}] \u274c HTTP {{.status_code}} {{.duration_ms}}ms ERROR: {{.error}}\"",
           "refId": "A"
         }
       ],
@@ -1616,13 +2236,13 @@
       "type": "logs"
     },
     {
-      "title": "📈 Efficiency, Sessions & Breakdown",
+      "title": "\ud83d\udcc8 Efficiency, Sessions & Breakdown",
       "type": "row",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 66
+        "y": 89
       },
       "collapsed": false
     },
@@ -1664,7 +2284,7 @@
         "h": 8,
         "w": 6,
         "x": 0,
-        "y": 67
+        "y": 90
       },
       "id": 18,
       "options": {
@@ -1729,7 +2349,7 @@
         "h": 8,
         "w": 18,
         "x": 6,
-        "y": 67
+        "y": 90
       },
       "id": 19,
       "options": {
@@ -1794,7 +2414,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 75
+        "y": 98
       },
       "id": 20,
       "options": {
@@ -1859,7 +2479,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 75
+        "y": 98
       },
       "id": 21,
       "options": {
@@ -1955,7 +2575,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 83
+        "y": 106
       },
       "id": 22,
       "options": {
@@ -2019,7 +2639,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 83
+        "y": 106
       },
       "id": 23,
       "options": {
@@ -2050,74 +2670,6 @@
       ],
       "title": "API Latency P95 by Model",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 2
-              },
-              {
-                "color": "purple",
-                "value": 5
-              }
-            ]
-          },
-          "unit": "suffix:x"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 19,
-        "y": 1
-      },
-      "id": 24,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "clamp_min(floor(sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"cli\"}[$__range])) / sum(increase(claude_code_active_time_seconds_total{job=\"otel-collector\", type=\"user\"}[$__range]))), 1)",
-          "interval": "",
-          "legendFormat": "Productivity",
-          "refId": "A"
-        }
-      ],
-      "title": "Productivity",
-      "type": "stat"
     },
     {
       "datasource": {
@@ -2157,12 +2709,16 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 91
+        "y": 114
       },
       "id": 25,
       "options": {
         "legend": {
-          "calcs": ["mean", "max", "lastNotNull"],
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom"
         },
@@ -2204,5 +2760,5 @@
   "timezone": "",
   "title": "Claude Code Observability",
   "uid": "claude-code-obs",
-  "version": 2
+  "version": 4
 }

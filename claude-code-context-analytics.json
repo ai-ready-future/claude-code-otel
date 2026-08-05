@@ -1,0 +1,927 @@
+{
+  "uid": "claude-code-context-analytics",
+  "title": "Context Window Analytics",
+  "schemaVersion": 27,
+  "version": 19,
+  "time": {
+    "from": "now-14d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "refresh": "5m",
+  "tags": [
+    "claude-code",
+    "context-analytics"
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Headline KPIs",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Median Context Size (main thread)",
+      "description": "p50 of input_tokens per api_request. Context approximated with input_tokens; cache tokens excluded from this calculation.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.5, {service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | unwrap ctx [$__range]) by ()",
+          "legendFormat": "p50_context_proxy",
+          "queryType": "instant",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "% Requests >=200k Context (main thread)",
+      "description": "Share of api_request events with input_tokens >= 200000. Context approximated with input_tokens; cache tokens excluded from this calculation.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | ctx >= 200000 [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" [$__range]))"
+        }
+      ],
+      "transformations": [],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.2
+              },
+              {
+                "color": "red",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Avg Cost / Request",
+      "description": "Weighted mean cost_usd per api_request over the selected range.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | unwrap cost_usd [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" [$__range]))",
+          "legendFormat": "avg_cost_per_request",
+          "queryType": "instant",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Avg Latency",
+      "description": "Weighted mean duration_ms per api_request over the selected range.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | unwrap duration_ms [$__range])) / sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" [$__range]))",
+          "legendFormat": "avg_latency_ms",
+          "queryType": "instant",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Context Band x Cost/Latency (per request)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      }
+    },
+    {
+      "id": 11,
+      "type": "barchart",
+      "title": "Requests by Context Band",
+      "description": "One bar per 100k context band. Bar height is the api_request count, main thread only, with each request put in the band of its own context size.\n\nFor the cost of each band, read the Cost/req column in the table below. That column is calculated from your own data at view time.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "",
+          "expr": "sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ $b := div (int .ctx) 100000 }}{{ if eq $b 0 }}0\u2013100k{{ else if eq $b 1 }}100\u2013200k{{ else if eq $b 2 }}200\u2013300k{{ else }}300k+{{ end }}` [$__range]))"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "keepLabels": [
+              "band"
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {},
+            "indexByName": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "band"
+              }
+            ]
+          }
+        },
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "band",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "Value",
+                "handlerKey": "field.value"
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.9,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 85,
+            "gradientMode": "none",
+            "axisLabel": "requests",
+            "axisPlacement": "auto",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "0\u2013100k"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "100\u2013200k"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "200\u2013300k"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "300k+"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Context Band x Cost/Latency (per request, main thread)",
+      "description": "Each api_request bucketed by its OWN context size (input + cache_read + cache_creation tokens), main thread only. Per-band ratios are computed server-side in LogQL; the table only joins the columns on the band index. Band N = context in [N*100k, (N+1)*100k).\n\nAll five queries share the same prefix: the stream selector, the query_source filter, and the two label_format steps that make `ctx` and `band`. LogQL permits only one `unwrap` per query, which is why they are five targets and not one. Keep the prefixes the same in all five if you change the band width or the filters.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "Requests",
+          "expr": "sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` [$__range]))"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "Cost/req",
+          "expr": "sum by (band) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` | unwrap cost_usd [$__range])) / sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` [$__range]))"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "Avg latency (ms)",
+          "expr": "sum by (band) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` | unwrap duration_ms [$__range])) / sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` [$__range]))"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "Output tok/req",
+          "expr": "sum by (band) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` | unwrap output_tokens [$__range])) / sum by (band) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` [$__range]))"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "Cache-read %",
+          "expr": "sum by (band) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` | unwrap cache_read_tokens [$__range])) / sum by (band) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | query_source=\"repl_main_thread\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | label_format band=`{{ div (int .ctx) 100000 }}` | unwrap ctx [$__range]))"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "keepLabels": [
+              "band"
+            ]
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "band",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true
+            },
+            "indexByName": {
+              "band": 0,
+              "A": 1,
+              "Value #A": 1,
+              "Requests": 1,
+              "B": 2,
+              "Value #B": 2,
+              "Cost/req": 2,
+              "C": 3,
+              "Value #C": 3,
+              "Avg latency (ms)": 3,
+              "D": 4,
+              "Value #D": 4,
+              "Output tok/req": 4,
+              "E": 5,
+              "Value #E": 5,
+              "Cache-read %": 5
+            },
+            "renameByName": {
+              "band": "Context band",
+              "A": "Requests",
+              "Value #A": "Requests",
+              "B": "Cost/req",
+              "Value #B": "Cost/req",
+              "C": "Avg latency (ms)",
+              "Value #C": "Avg latency (ms)",
+              "D": "Output tok/req",
+              "Value #D": "Output tok/req",
+              "E": "Cache-read %",
+              "Value #E": "Cache-read %"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Context band"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "0\u2013100k",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "100\u2013200k",
+                        "index": 1
+                      },
+                      "2": {
+                        "text": "200\u2013300k",
+                        "index": 2
+                      },
+                      "3": {
+                        "text": "300\u2013400k",
+                        "index": 3
+                      },
+                      "4": {
+                        "text": "400\u2013500k",
+                        "index": 4
+                      },
+                      "5": {
+                        "text": "500\u2013600k",
+                        "index": 5
+                      },
+                      "6": {
+                        "text": "600\u2013700k",
+                        "index": 6
+                      },
+                      "7": {
+                        "text": "700\u2013800k",
+                        "index": 7
+                      },
+                      "8": {
+                        "text": "800\u2013900k",
+                        "index": 8
+                      },
+                      "9": {
+                        "text": "900k+",
+                        "index": 9
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cost/req"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg latency (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Output tok/req"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cache-read %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Requests"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 103,
+      "type": "row",
+      "collapsed": false,
+      "title": "Context Size by Source",
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Median Context Size by Query Source",
+      "description": "Median computed context (input + cache_read + cache_creation) per request, grouped by the subsystem that issued it. repl_main_thread is your interactive conversation; agent:* are sub-agents; compact/away_summary/etc. are auxiliary. Rendered as a value-sorted table with inline bar-gauge cells: the bar chart re-sorts the category axis alphabetically regardless of frame order (merge/sortBy/reduce all discarded), so the only reliable largest-to-smallest sort is the table's panel-level sortBy.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 24,
+        "h": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "queryType": "instant",
+          "instant": true,
+          "legendFormat": "",
+          "expr": "sort_desc(quantile_over_time(0.5, {service_name=\"claude-code\"} | event_name=\"api_request\" | label_format ctx=`{{ add (int .input_tokens) (int .cache_read_tokens) (int .cache_creation_tokens) }}` | unwrap ctx [$__range]) by (query_source))"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "keepLabels": [
+              "query_source"
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "query_source": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "query_source": "Query source",
+              "Value": "Median context"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "Median context",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Query source"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Median context"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient",
+                  "valueDisplayMode": "text"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

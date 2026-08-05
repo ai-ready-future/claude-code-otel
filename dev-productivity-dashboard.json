@@ -2,7 +2,7 @@
   "title": "Developer Productivity",
   "uid": "claude-code-dev-productivity",
   "schemaVersion": 27,
-  "version": 8,
+  "version": 10,
   "tags": [
     "claude-code",
     "productivity",
@@ -35,7 +35,7 @@
   "panels": [
     {
       "type": "row",
-      "title": "Headline — Leverage, Speed & Efficiency",
+      "title": "Headline \u2014 Leverage, Speed & Efficiency",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -49,8 +49,8 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Leverage — agent time vs. your time",
-      "description": "Total agent (CLI) active-time ÷ your active-time over the visible range. >1× means the agent did more wall-clock work than you put in by hand. 1× = break-even.",
+      "title": "Leverage \u2014 agent time vs. your time",
+      "description": "Total agent (CLI) active-time \u00f7 your active-time over the visible range. >1\u00d7 means the agent did more wall-clock work than you put in by hand. 1\u00d7 = break-even.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -63,7 +63,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "suffix:×",
+          "unit": "suffix:\u00d7",
           "decimals": 2,
           "displayName": "Leverage",
           "color": {
@@ -110,7 +110,7 @@
       "id": 3,
       "type": "stat",
       "title": "Accepted edits per active hour",
-      "description": "Accepted code edits (Edit/Write, decision=accept) per hour of ACTIVE engagement, range-wide ratio-of-sums: sum(accepted edits over range) / (sum(active seconds, CLI+user)/3600). A SPEED/cadence signal, NOT quality — read alongside 'First-pass acceptance (%)' (panel 6): rising cadence WITH stable acceptance is healthy; rising cadence WITH falling acceptance is rubber-stamping. Neutral color on purpose: faster isn't automatically better. Judge the trend against your own baseline — no fixed 'good' target. Sparkline shows the trailing shape. user_email filter is cosmetic on this single-user host.",
+      "description": "Accepted code edits (Edit/Write, decision=accept) per hour of ACTIVE engagement, range-wide ratio-of-sums: sum(accepted edits over range) / (sum(active seconds, CLI+user)/3600). A SPEED/cadence signal, NOT quality \u2014 read alongside 'First-pass acceptance (%)' (panel 6): rising cadence WITH stable acceptance is healthy; rising cadence WITH falling acceptance is rubber-stamping. Neutral color on purpose: faster isn't automatically better. Judge the trend against your own baseline \u2014 no fixed 'good' target. Sparkline shows the trailing shape. user_email filter is cosmetic on this single-user host.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -162,8 +162,8 @@
     {
       "id": 7,
       "type": "stat",
-      "title": "Cache hit ratio — context served from cache",
-      "description": "Share of prompt-context tokens served from the prompt cache: cacheRead / (input + cacheRead + cacheCreation), ratio-of-sums over the visible range. Excludes output tokens. Higher is better — more reused context means lower token cost and faster turns. Healthy multi-turn sessions run ~85-95%; a sustained drop below your own baseline (under ~0.9 yellow, under ~0.7 red) signals cache-unfriendly prompting (volatile/early-changing context, churning CLAUDE.md, or reordered MCP/context load).",
+      "title": "Cache hit ratio \u2014 context served from cache",
+      "description": "Share of prompt-context tokens served from the prompt cache: cacheRead / (input + cacheRead + cacheCreation), ratio-of-sums over the visible range. Excludes output tokens. Higher is better \u2014 more reused context means lower token cost and faster turns. Healthy multi-turn sessions run ~85-95%; a sustained drop below your own baseline (under ~0.9 yellow, under ~0.7 red) signals cache-unfriendly prompting (volatile/early-changing context, churning CLAUDE.md, or reordered MCP/context load).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -226,7 +226,7 @@
     },
     {
       "type": "row",
-      "title": "Friction — where time & attention leak",
+      "title": "Friction \u2014 where time & attention leak",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -241,7 +241,7 @@
       "id": 11,
       "type": "timeseries",
       "title": "Tool failure rate by tool (%)",
-      "description": "Share of each tool's calls that FAILED (success=false), per tool_name, as a 6h trailing ratio-of-sums (failed/total). Self-normalizing — internalizes call volume, so failing 3% of 4,000 Bash calls is distinguished from failing 50% of 4 calls. This is the dashboard's primary friction signal (Loki, all-user). Watch the RATE, not raw counts: a tool climbing above its own baseline = flaky command, wrong path pattern, or misconfig. A failed call isn't always wasted (a grep that misses still informs the next step). 6h window smooths low-volume tools; gaps are honest (no calls). Legend max = worst spike. Only tools that failed at least once appear.",
+      "description": "Share of each tool's calls that FAILED (success=false), per tool_name, as a 6h trailing ratio-of-sums (failed/total). Self-normalizing \u2014 internalizes call volume, so failing 3% of 4,000 Bash calls is distinguished from failing 50% of 4 calls. This is the dashboard's primary friction signal (Loki, all-user). Watch the RATE, not raw counts: a tool climbing above its own baseline = flaky command, wrong path pattern, or misconfig. A failed call isn't always wasted (a grep that misses still informs the next step). 6h window smooths low-volume tools; gaps are honest (no calls). Legend max = worst spike. Only tools that failed at least once appear.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -298,8 +298,8 @@
     {
       "id": 12,
       "type": "timeseries",
-      "title": "Interruptions — rejected tool calls (by tool)",
-      "description": "Tool calls you DECLINED (Loki tool_decision, decision=reject), counted in disjoint per-bucket windows and stacked by tool_name so you see WHICH tool's actions you interrupt most. Read as ATTENTION COST + a steering signal, NOT a quality grade — a reject often means the guardrail worked (you caught drift before it landed). Over 7d, Bash dominates rejects (you decline proposed commands); if that climbs, tighten what the agent may run (allowlist, narrower prompts, CLAUDE.md guidance). Loki is all-user; $user does not narrow it. Disjoint $__interval buckets (no sliding double-count); legend sum = total rejects per tool over the range. Low-frequency (~9/day) so buckets are sparse by nature — read the composition, not bar height.",
+      "title": "Interruptions \u2014 rejected tool calls (by tool)",
+      "description": "Tool calls you DECLINED (Loki tool_decision, decision=reject), counted in disjoint per-bucket windows and stacked by tool_name so you see WHICH tool's actions you interrupt most. Read as ATTENTION COST + a steering signal, NOT a quality grade \u2014 a reject often means the guardrail worked (you caught drift before it landed). Over 7d, Bash dominates rejects (you decline proposed commands); if that climbs, tighten what the agent may run (allowlist, narrower prompts, CLAUDE.md guidance). Loki is all-user; $user does not narrow it. Disjoint $__interval buckets (no sliding double-count); legend sum = total rejects per tool over the range. Low-frequency (~9/day) so buckets are sparse by nature \u2014 read the composition, not bar height.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -353,6 +353,274 @@
         "w": 12,
         "x": 12,
         "y": 10
+      }
+    },
+    {
+      "id": 1003,
+      "type": "barchart",
+      "title": "Delegation vs Coding ROI",
+      "description": "Per-session delegation ratio (Task/Agent tool_result calls divided by Edit/Write/MultiEdit/NotebookEdit tool_result calls) bucketed against edit accept-rate from tool_decision events. Correlation, not causation: hard tasks can cause more delegation, so a high-delegation quality dip may reflect task difficulty rather than delegation harm. Shows N per bucket so sparse buckets are visible. Sessions with zero edit decisions are excluded from the accept-rate average.\n\nHow the bucket is chosen: `bucket_formula` = min(floor(ratio * 3), 3), which puts each session in one of four buckets by its delegation ratio. The ratio is not a number when a session has delegation calls but no edits, so `bucket_override` sends that session to the highest bucket, and `ifnan` selects the override only in that case.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (session_id) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=~\"Task|Agent\" [$__range]))",
+          "legendFormat": "delegation_calls",
+          "queryType": "instant",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (session_id) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=~\"Edit|Write|MultiEdit|NotebookEdit\" [$__range]))",
+          "legendFormat": "edit_calls",
+          "queryType": "instant",
+          "instant": true
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (session_id) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | decision=\"accept\" [$__range]))",
+          "legendFormat": "accepted_decisions",
+          "queryType": "instant",
+          "instant": true
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (session_id) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" [$__range]))",
+          "legendFormat": "total_decisions",
+          "queryType": "instant",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "ratio",
+            "binary": {
+              "left": "delegation_calls",
+              "operator": "/",
+              "right": "edit_calls"
+            },
+            "mode": "binary",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "accept_rate",
+            "binary": {
+              "left": "accepted_decisions",
+              "operator": "/",
+              "right": "total_decisions"
+            },
+            "mode": "binary",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "total_decisions",
+                "config": {
+                  "id": "greater",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "accept_rate",
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                }
+              }
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "bucket_override",
+            "math": "if(edit_calls == 0 && delegation_calls > 0, 3, 0)",
+            "mode": "math",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "delegation_calls",
+                "config": {
+                  "id": "greater",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "fieldName": "edit_calls",
+                "config": {
+                  "id": "greater",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              }
+            ],
+            "match": "any",
+            "type": "include"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "bucket_formula",
+            "math": "min(floor(ratio * 3), 3)",
+            "mode": "math",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "bucket_index",
+            "math": "ifnan(bucket_formula, bucket_override)",
+            "mode": "math",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "bucket_override": true,
+              "bucket_formula": true
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "bucket_index": {
+                "operation": "groupby"
+              },
+              "accept_rate": {
+                "aggregations": [
+                  "mean"
+                ],
+                "operation": "aggregate"
+              },
+              "session_id": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "min": 0,
+          "max": 1,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "None"
+                },
+                "1": {
+                  "text": "Light"
+                },
+                "2": {
+                  "text": "Heavy"
+                },
+                "3": {
+                  "text": "Agent-dominant"
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "green",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "count"
+          ]
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 18
       }
     }
   ]

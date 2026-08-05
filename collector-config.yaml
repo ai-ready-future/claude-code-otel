@@ -21,6 +21,16 @@ exporters:
     # increment once and never update; the default ~5m expiration drops them from
     # /metrics, breaking "Active Sessions" and similar panels. Hold series for 24h.
     metric_expiration: 24h
+    # Keep resource attributes as Prometheus labels. Without this the exporter
+    # keeps only service.name (as job) and service.instance.id, and drops
+    # host.name, host.arch, os.type, os.version and service.version. The
+    # "Session Detail" panels filter on host_name, so they stay empty.
+    # The loss is hard to see, because logs keep the attributes: the same
+    # machines look labelled in Loki and unlabelled in Prometheus.
+    # Cardinality stays low — these are a few fixed attributes. Session and
+    # user IDs are metric attributes, not resource attributes.
+    resource_to_telemetry_conversion:
+      enabled: true
 
   debug:
     verbosity: normal

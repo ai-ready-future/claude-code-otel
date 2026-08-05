@@ -63,7 +63,41 @@ for f in *.json; do
   else pass "$f free of '| json'"; fi
 done
 
-# 6. Shell scripts are syntactically valid
+# 6. Regression guard: every dashboard must be mounted into Grafana. A dashboard
+#    added to the repo but not to the compose file is invisible at runtime, and
+#    nothing else reports it.
+#    Only files that are dashboards are checked: a root-level *.json that is not
+#    a dashboard (a package manifest, a fixture) has no business being mounted.
+echo "▸ dashboard provisioning"
+for f in *.json; do
+  [ -e "$f" ] || continue
+  jq -e 'has("panels")' "$f" >/dev/null 2>&1 || continue
+  if grep -q "\./$f:/var/lib/grafana/dashboards/" docker-compose.yml; then pass "$f mounted into grafana"
+  else fail "$f is not mounted in docker-compose.yml — Grafana never loads it"; fi
+done
+
+# 7. Regression guard: every datasource uid a dashboard refers to must exist in
+#    grafana-datasources.yml. Grafana makes a random uid for a datasource that
+#    declares none, so a dashboard reference then resolves to nothing and every
+#    panel shows "Datasource not found". (Learned-the-hard-way gotcha.)
+echo "▸ datasource uid references"
+if command -v jq >/dev/null 2>&1 && command -v yq >/dev/null 2>&1; then
+  defined=$(yq -r '.datasources[].uid' grafana-datasources.yml | grep -v '^null$' | sort -u)
+  for f in *.json; do
+    [ -e "$f" ] || continue
+    missing=""
+    for uid in $(jq -r '[.. | objects | select(has("uid") and has("type"))
+                         | select(.type | IN("prometheus","loki","alertmanager"))
+                         | .uid] | unique | .[]' "$f"); do
+      case "$uid" in \$*) continue ;; esac   # dashboard variable, resolved at view time
+      grep -qxF "$uid" <<<"$defined" || missing="$missing $uid"
+    done
+    if [ -z "$missing" ]; then pass "$f datasource uids all defined"
+    else fail "$f refers to undefined datasource uid(s):$missing"; fi
+  done
+else skip "datasource uid references" "jq/yq unavailable"; fi
+
+# 8. Shell scripts are syntactically valid
 echo "▸ shell syntax"
 for f in scripts/*.sh; do
   [ -e "$f" ] || continue
